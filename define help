@@ -1,0 +1,5 @@
+(define help '(((help) help)))
+(define actions `(,@look ,@quit ,@pick ,@drop ,@inventory ,@help ,@move ,@kill ,@show))
+((eq? response 'help)
+               (printf "look --- pick ---- drop ---inventory. ")
+               (loop id #t))
