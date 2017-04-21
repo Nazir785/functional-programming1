@@ -1,0 +1,373 @@
+#lang racket
+;;import librarys
+(require srfi/1)
+(require srfi/13)
+
+;; define objects that is linked with define names ,description and decisiontable.
+(define objects '((1 "Scanner doors on your left and right")
+                  (2 "Hint: Select ID")
+                  (3 "Information point")
+                  (3 "student support offices")
+                  (4 "canteen on your right")
+                  (5 "library helpdesk")
+                  (5 "freddies bar")
+                  (6 " third floor ")
+                  (6 "first floor, second floor")
+                  (7 " group study")
+                  (7 "womens toilet in the corrider")
+                  (8 " starbucks")
+                  (8 "Admin office")
+                  (9 "business studies and accsess to warwick site")))
+                  
+;; name of the places, locations
+(define names '((1 "main reception")
+                (4 "School of computing & engineering")
+                (4 " access to warwick site and Computer Science offices")
+                (5 "canteen and access to warwick site on your right")
+                (6 "frist floor(group study) computer Science")
+                (8 " library helpdesk")
+                (9 "quite study floor")
+                (11 "personal labs")))
+              
+
+;;;;Start Game
+;;advnaced command line-processor
+;;description of each commands when enter in thhe descsiontable
+(define descriptions'  (( "you have entered the main entrance of UWL")
+                        (1 "The objective of this game is to get to the computer science libray floor
+                            from the main entrance")
+                       (2 "To Enter the uni Street, You are required to scan your ID")
+                       (3 "You have entered the street.")
+                       (4 "You entered the street form lady Byron site")
+                       (5 "you are on the weston hall.")
+                       (6 "how can i help u?")
+                       (7 "You are going up to the first floor.")
+                       (8 "You are going to weston hall on you right.")
+                       (9 "You are going to second floor quite study floor.")
+                       (10 "You are  going to exite ground floor .")
+                       (11 "you are going to first floor group study computer science .")
+                       ("welldone! you found your way to exit libray")
+                       (12 "welldone! ypu successfully entered the computer section floor.")
+                       (13 "stop! staff use only  .")
+                       (14 " your exited from library  warwick site." )
+                       (15 " you have reached to your destinations. thank you!")))
+                       
+;;define each functions look, quit, pick, drop, help, move, inventory and actions.
+(define look '(((directions) look) ((look) look) ((examine room) look)))
+(define quit '(((exit game) quit) ((quit game) quit) ((exit) quit) ((quit) quit)))
+(define pick '(((get) pick) ((pickup) pick) ((pick) pick)))
+(define drop '(((put) drop) ((drop) drop) ((place) drop) ((remove) drop)))
+(define help '(((help) help)))
+(define move '(((move) move)))
+(define inventory '(((inventory) inventory) ((bag) inventory)))
+(define actions `(,@look ,@quit ,@pick ,@drop ,@inventory ,@help ,@move))
+
+(define decisiontable `((1 ((left) 2) ((right) 2) ,@actions)
+                        (2 ((a:21286634) 3) ((b:21287564) 4) ,@actions)
+                        (3 ((right) 5)  ,@actions)
+                        (4 ((stairs) 8) ((lift) 4) ,@actions)
+                        (5 ((library helpdesk) 6)  ,@actions)
+                        (6 ((stairs) 7) ((lift) 8) ,@actions)
+                        (7 ((up) 9) ((right) 11) ,@actions)
+                        (8 ((computer section) 12) ((group study) 9) ((lift) 13) ,@actions)
+                        (9 ((stairs) 10) ((lift) 13) ,@actions)
+                        (10 ((left) 11)  ,@actions)
+                        (11 ((ground floor) 14 ) ((stairs) 15) ,@actions)
+                        (14 ((Retrun)1))))
+
+;;a number of hash table arer defined in order
+;;to support the mutable data structure
+;;that all contain out reference to the objects available
+;in the rooms and the user inventory
+(define objectdb (make-hash))
+;; Initializes the inventory database
+(define inventorydb (make-hash))
+;; Initializes the name database
+(define namedb (make-hash))
+
+;;Adds a given object to a database object dbs)
+(define (add-object db id object)
+  ;check if the has key exists
+  (if (hash-has-key? db id)
+      (let ((record (hash-ref db id)))
+        (hash-set! db id (cons object record)))
+      (hash-set! db id (cons object empty))))
+
+
+(define (add-name db id name)
+  ;check if the has key exists
+  (if (hash-has-key? db id)
+      (let ((record (hash-ref db id)))
+        (hash-set! db id (cons name record)))
+      (hash-set! db id (cons name empty))))
+
+;;use the for each function to add evert item in the assoc list to the objectdb using
+;; the add-object function.
+;;(first r ) return the index of objects assoc  list  room
+;;second r) returns the item of the objs assoc list room
+(define (add-objects db)
+  (for-each
+   (lambda (r) 
+     (add-object db (first r) (second r))) objects))
+
+
+;;use the for each function to add evert item in the assoc list to the namedb using
+;; the add-names function.
+;;(first r ) return the index of names assoc  list  room
+;;second r) returns the item of the objs assoc list room
+(define (add-names db)
+  (for-each
+   (lambda (r) 
+     (add-name db (first r) (second r))) names))
+
+
+
+;;populate objectdb with the items provided in the object
+(add-objects objectdb)
+
+;;populate namedb with the items provided in the name
+(add-names namedb)
+
+
+
+;this function can be called to check if
+;the items in the room ore the item available in the inventory
+(define (display-objects db id)
+  (when (hash-has-key? db id)
+    ;;join string if multiple items
+    (let* ((record (hash-ref db id))
+           (output (string-join record " and ")))
+      (when (not (equal? output ""))
+        (if (eq? id 'bag)
+            (printf "You are carrying ~a.\n" output)
+            (printf "you can see ~a.\n" output))))))
+
+;this function can be called to check if
+;the items in the room ore the item available in the inventory
+(define (display-names db id)
+  (when (hash-has-key? db id)
+    ;;join string if multiple items
+    (let* ((record (hash-ref db id))
+           (output (string-join record " and ")))
+      (when (not (equal? output ""))
+        (if (eq? id 'bag)
+            (printf "You are carrying ~a.\n" output)
+            (printf "you can see ~a.\n" output))))))
+
+
+;WHEN REMOVE AN OBJECT CHECK THE IF HTE HASH EXIST
+;IF YES THEN CHECK THE REFERENCE
+(define (remove-object-from-room db id str)
+  (when (hash-has-key? db id)
+    (let* ((record (hash-ref db id))
+           ;result if the list of items left in the room
+           (result (remove (lambda (x) (string-suffix-ci? str x)) record))
+           ;item is the difference with the previous list e.g. the item collected
+           (item (lset-difference equal? record result)))
+      (cond ((null? item) 
+             (printf "I don't see that item in the room!\n"))
+            (else
+             (printf "Added ~a to your bag.\n" (first item))
+             (add-object inventorydb 'bag (first item))
+             (hash-set! db id result))))))
+
+;WHEN REMOVE name CHECK THE IF the HASH EXIST
+;IF YES THEN CHECK THE REFERENCE
+(define (remove-name-from-room db id str)
+  (when (hash-has-key? db id)
+    (let* ((record (hash-ref db id))
+           ;result if the list of items left in the room
+           (result (remove (lambda (x) (string-suffix-ci? str x)) record))
+           ;item is the difference with the previous list e.g. the item collected
+           (item (lset-difference equal? record result)))
+      (cond ((null? item) 
+             (printf "I don't see that item in the room!\n"))
+            (else
+             (printf "Added ~a to your bag.\n" (first item))
+             (add-name inventorydb 'bag (first item))
+             (hash-set! db id result))))))
+;When we remove an item from a room we need to add it to our inventory.
+(define (remove-object-from-inventory db id str)
+  ;; When key(id) has something stored in db, proceed
+  (when (hash-has-key? db 'bag)
+    (let* ((record (hash-ref db 'bag))
+           (result (remove (lambda (x) (string-suffix-ci? str x)) record))
+           (item (lset-difference equal? record result)))
+      (cond ((null? item)
+             ;;print this
+             (printf "You are not carrying that item!\n"))
+            (else
+             ;;print this
+             (printf "Removed ~a from your bag.\n" (first item))
+             (add-object objectdb id (first item))
+             (hash-set! db 'bag result))))))
+;;when we remove an item from our bag we need to put it
+;back in a room. Not the subtle code changes between this and the
+;previous function.
+(define (remove-name-from-inventory db id str)
+  (when (hash-has-key? db 'bag)
+    (let* ((record (hash-ref db 'bag))
+           (result (remove (lambda (x) (string-suffix-ci? str x)) record))
+           (item (lset-difference equal? record result)))
+      (cond ((null? item)
+             (printf "You are not carrying that item!\n"))
+            (else
+             (printf "Removed ~a from your bag.\n" (first item))
+             (add-name namedb id (first item))
+             (hash-set! db 'bag result))))))
+;; Picking up objects
+;; need to call these functions from  command loop.          
+(define (pick-item id input)
+  ;; Removes the command from the input, getting only the name of the item
+  (let ((item (string-join (cdr (string-split input)))))
+    (remove-object-from-room objectdb id item)))
+;;
+(define (fight-name id input)
+  (let ((item (string-join (cdr (string-split input)))))
+    (remove-name-from-room namedb id item)))
+;; Dropping objects
+(define (put-item id input)
+   ;; Removes the command from the input, getting only the name of the item
+  (let ((item (string-join (cdr (string-split input)))))
+    (remove-object-from-inventory inventorydb id item)))
+
+
+;; Displays the content of  inventory
+(define (display-inventory)
+  (display-objects inventorydb 'bag))
+
+
+;; Maps the parameter to a list of atoms and then joins it in a string with separator " "
+(define (slist->string l)
+  (string-join (map symbol->string l)))
+
+(define (get-directions id)
+  (let ((record (assq id decisiontable)))
+    (let* ((result (filter (lambda (n) (number? (second n))) (cdr record)))
+           (n (length result)))
+      (cond ((= 0 n)
+             (printf "You appear to have entered a room with no exits.\n"))
+            ((= 1 n)
+              (printf "You can see an exit to the ~a.\n" (slist->string (caar result))))
+            (else
+             (let* ((losym (map (lambda (x) (car x)) result))
+                    
+                    (lostr (map (lambda (x) (slist->string x)) losym)))
+               (printf "You can see an exit to the ~a.\n" (string-join lostr " and "))))))))
+;; Retrieves the cdr of the first pair in assqlist where the car is equals to id
+(define (assq-ref assqlist id)
+  (cdr (assq id assqlist)))
+;; The same as assq-ref but uses eqv? for comparison instead of eq?
+(define (assv-ref assqlist id)
+  (cdr (assv id assqlist)))
+
+(define (get-description id)
+  (car (assq-ref descriptions id)))
+;; Retrieve the valid keywords for the game
+(define (get-keywords id)
+   ;; Assigns to keys a list with the possible actions for the current room
+  (let ((keys (assq-ref decisiontable id)))
+    ;; Return the accepted keywords(not their actions)
+    (map (lambda (key) (car key)) keys)))
+
+
+;; outputs a list in the form: (0 0 0 2 0 0)
+(define (list-of-lengths keylist tokens)
+  (map 
+   (lambda (x)
+       ;; Returns the intersection between the tokens list(command given) and the keyword
+     (let ((set (lset-intersection eq? tokens x)))
+       ;; apply some weighting to the result
+       (* (/ (length set) (length x)) (length set))))
+   keylist))
+;; Returns the most probable input command
+(define (index-of-largest-number list-of-numbers)
+  ;; Sorts the list of lengths in descending order and gets the first element(greatest)
+  (let ((n (car (sort list-of-numbers >))))
+  ;; Checks if the list is not empty(returns #f if the greatest element is 0)
+    (if (zero? n)
+      #f
+      ;; Returns the index of the entry with the greatest weight,
+      ;;so it can be matched with the list of keywords later
+      (list-index (lambda (x) (eq? x n)) list-of-numbers))))
+
+;;Receives the id(current room number) and a list of symbols
+;;that represents the user input(tokens)
+(define (lookup id tokens)
+  ;;Assigns to record a list with the possible actions for the current room
+  (let* ((record (assv-ref decisiontable id))
+         ;; Assigns to keylist a list with the valid keywords for the game
+         (keylist (get-keywords id))
+         ;; By calling list-of-lengths, creates a list of lengths with
+         ;;the most probable commands and then decide which one is the most probable
+         ;;using index-of-largest-number
+         (index (index-of-largest-number (list-of-lengths keylist tokens))))
+    ;; If there is an index(prevent errors), retrieves the command
+    ;;that is present in that index inside the list record(list which contains
+    ;;the valid actions for the current room). Otherwise returns false
+    (if index 
+      (cadr (list-ref record index))
+      #f)))
+
+(define (display-description id)
+  (printf "~a\n" (get-description id)))
+
+;; command loop with some 
+;;conditional statements to try and handle the responses.
+(define (startgame initial-id)
+  (let loop ((id initial-id) (description #t))
+    (when description
+      (display-description id)
+      (display-objects objectdb id)
+      (display-names namedb id))
+    (printf "> ")
+   ;; Read input
+    (let* ((input (read-line))
+            ;; Function contained in the srfi/13 library,
+           ;;tokenize the input into substrings where a space character is found
+           (string-tokens (string-tokenize input))
+           ;; Creates a list of symbols(not strings) with the input.
+           ;;This is needed to compare the entry with our predefined lists
+           (tokens (map string->symbol string-tokens)))
+      ;; Decides which action response corresponds to. 
+      (let ((response (lookup id tokens)))
+        (cond ((number? response)
+               (loop response #t))
+              ;; If response  couldn't be found after the lookup function, shows error message
+              ((eq? #f response)
+               (printf "huh? I didn't understand that!\n")
+               (loop id #f))
+              ;; Response action is look at around the room for directions
+              ((eq? response 'look)
+               ;; Retrieve possible directions
+               (get-directions id)
+               (loop id #t))
+              ;; Response action is to pick an item
+              ((eq? response 'pick)
+               ;; Pick up item
+               (pick-item id input)
+               (loop id #f))
+              ;; Displays Help
+             ((eq? response 'help)
+               (printf "look --- pick ---- drop ---inventory. ")
+               (loop id #t))
+             ;; Displays move
+             ((eq? response 'move)
+               (printf "you can enter University main entrance from left and right !")
+             (loop id #t))
+             ;; Response action is to drop an item
+              ((eq? response 'drop)
+               (put-item id input)
+               (loop id #f))
+              ;; Response action is to show inventory
+              ((eq? response 'inventory)
+               (display-inventory)
+               (loop id #f))
+              ;; quit game 
+              ((eq? response 'quit)
+               (printf "So Long, Hasta la Vista, User!...\n")
+               ;;exit game
+               (exit)))))))
+
+
+(startgame 1)
