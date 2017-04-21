@@ -1,0 +1,6 @@
+(define move '(((move) move)))
+(define actions `(,@look ,@quit ,@pick ,@drop ,@inventory ,@help ,@move ,@kill ,@show))
+((eq? response 'move)
+               (printf "you can enter University main entrance from left and right !")
+             (loop id #t))
+             ((eq? response 'kill)
