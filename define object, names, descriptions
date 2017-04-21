@@ -1,0 +1,49 @@
+;; define objects that is linked with define names ,description and decisiontable.
+(define objects '((1 "Scanner doors on your left and right")
+                  (2 "Hint: Select ID")
+                  (3 "Information point")
+                  (3 "student support offices")
+                  (4 "canteen on your right")
+                  (5 "library helpdesk")
+                  (5 "freddies bar")
+                  (6 " third floor ")
+                  (6 "first floor, second floor")
+                  (7 " group study")
+                  (7 "womens toilet in the corrider")
+                  (8 " starbucks")
+                  (8 "Admin office")
+                  (9 "business studies and accsess to warwick site")))
+                  
+;; name of the places, locations
+(define names '((1 "main reception")
+                (4 "School of computing & engineering")
+                (4 " access to warwick site and Computer Science offices")
+                (5 "canteen and access to warwick site on your right")
+                (6 "frist floor(group study) computer Science")
+                (8 " library helpdesk")
+                (9 "quite study floor")
+                (11 "personal labs")))
+              
+
+;;;;Start Game
+;;advnaced command line-processor
+;;description of each commands when enter in thhe descsiontable
+(define descriptions'  (( "you have entered the main entrance of UWL")
+                        (1 "The objective of this game is to get to the computer science libray floor
+                            from the main entrance")
+                       (2 "To Enter the uni Street, You are required to scan your ID")
+                       (3 "You have entered the street.")
+                       (4 "You entered the street form lady Byron site")
+                       (5 "you are on the weston hall.")
+                       (6 "how can i help u?")
+                       (7 "You are going up to the first floor.")
+                       (8 "You are going to weston hall on you right.")
+                       (9 "You are going to second floor quite study floor.")
+                       (10 "You are  going to exite ground floor .")
+                       (11 "you are going to first floor group study computer science .")
+                       ("welldone! you found your way to exit libray")
+                       (12 "welldone! ypu successfully entered the computer section floor.")
+                       (13 "stop! staff use only  .")
+                       (14 " your exited from library  warwick site." )
+                       (15 " you have reached to your destinations. thank you!")))
+                       
