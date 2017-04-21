@@ -1,0 +1,5 @@
+(define kill '(((kill) kill)))
+(define actions `(,@look ,@quit ,@pick ,@drop ,@inventory ,@help ,@move ,@kill ,@show))
+((eq? response 'kill)
+               (printf "kill object !")
+             (loop id #t))
