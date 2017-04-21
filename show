@@ -1,0 +1,5 @@
+(define show '(((show) show)))
+(define actions `(,@look ,@quit ,@pick ,@drop ,@inventory ,@help ,@move ,@kill ,@show))
+((eq? response 'show)
+               (printf "your only aim destination is to get to computer science floor building. !")
+             (loop id #t))
